@@ -94,23 +94,23 @@ impl Grid {
         }
     }
 
-    pub fn get_subsection(&self, subsection_type: GridSubsectionType) -> GridSubSection {
-        GridSubSection::new(&self, subsection_type)
+    pub fn get_subsection(&self, subsection_type: GridSubsectionType) -> GridSubsection {
+        GridSubsection::new(&self, subsection_type)
     }
 
-    pub fn get_rows(&self) -> Vec<GridSubSection> {
+    pub fn get_rows(&self) -> Vec<GridSubsection> {
         (0..self.side_size)
             .map(|i| self.get_subsection(GridSubsectionType::Row(i)))
             .collect()
     }
 
-    pub fn get_columns(&self) -> Vec<GridSubSection> {
+    pub fn get_columns(&self) -> Vec<GridSubsection> {
         (0..self.side_size)
             .map(|i| self.get_subsection(GridSubsectionType::Column(i)))
             .collect()
     }
 
-    pub fn get_squares(&self) -> Vec<GridSubSection> {
+    pub fn get_squares(&self) -> Vec<GridSubsection> {
         (0..self.side_size)
             .map(|i| {
                 self.get_subsection(GridSubsectionType::Square(
@@ -121,7 +121,7 @@ impl Grid {
             .collect()
     }
 
-    pub fn get_all_subsections(&self) -> Vec<GridSubSection> {
+    pub fn get_all_subsections(&self) -> Vec<GridSubsection> {
         (0..self.side_size)
             .flat_map(|i| {
                 [
@@ -136,7 +136,7 @@ impl Grid {
             .collect()
     }
 
-    pub fn get_subsections_for_cell(&self, x: usize, y: usize) -> [GridSubSection; 3] {
+    pub fn get_subsections_for_cell(&self, x: usize, y: usize) -> [GridSubsection; 3] {
         [
             self.get_subsection(GridSubsectionType::Row(y)),
             self.get_subsection(GridSubsectionType::Column(x)),
@@ -168,13 +168,13 @@ pub enum GridSubsectionType {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct GridSubSection<'a> {
+pub struct GridSubsection<'a> {
     grid: &'a Grid,
     current: usize,
     pub subsection_type: GridSubsectionType,
 }
 
-impl<'a> GridSubSection<'a> {
+impl<'a> GridSubsection<'a> {
     fn new(grid: &'a Grid, subsection_type: GridSubsectionType) -> Self {
         // validate grid
         Self {
@@ -185,7 +185,7 @@ impl<'a> GridSubSection<'a> {
     }
 }
 
-impl<'a> Iterator for GridSubSection<'a> {
+impl<'a> Iterator for GridSubsection<'a> {
     type Item = usize;
 
     fn next(&mut self) -> Option<Self::Item> {

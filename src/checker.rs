@@ -18,7 +18,7 @@ impl Checker {
         }
     }
 
-    pub fn check_subsection(&mut self, subsection: &GridSubSection) -> CheckerResult {
+    pub fn check_subsection(&mut self, subsection: &GridSubsection) -> CheckerResult {
         self.values.clear();
         let valid = subsection.fold(true, |acc, curr| {
             if curr != 0 && self.values.contains(&curr) {
@@ -36,7 +36,7 @@ impl Checker {
 
     pub fn check_subsections(
         &mut self,
-        subsections: &[GridSubSection],
+        subsections: &[GridSubsection],
     ) -> Vec<(GridSubsectionType, CheckerResult)> {
         subsections
             .iter()
