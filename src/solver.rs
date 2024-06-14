@@ -13,16 +13,15 @@ impl Solver {
             .get_rows()
             .into_iter()
             .enumerate()
-            .flat_map(|(i, row)| {
+            .flat_map(|(y, row)| {
                 row.into_iter()
                     .enumerate()
-                    .filter_map(|(j, value)| match value {
-                        0 => Some((j, i)),
+                    .filter_map(|(x, value)| match value {
+                        0 => Some((x, y)),
                         _ => None,
                     })
                     .collect::<Vec<_>>()
             })
-            .rev()
             .collect();
         Self {
             game,
