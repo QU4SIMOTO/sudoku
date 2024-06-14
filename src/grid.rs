@@ -10,7 +10,7 @@ pub enum GridError {
 }
 
 #[derive(Debug, PartialEq)]
-pub struct Cell {
+struct Cell {
     value: usize,
     readonly: bool,
 }
