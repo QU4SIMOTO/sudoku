@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum GridError {
     InvalidGridSize,
@@ -117,6 +119,21 @@ impl Grid {
             self.get_subsection(GridSubsectionType::Column(x)),
             self.get_subsection(GridSubsectionType::Square(x / 3, y / 3)),
         ]
+    }
+}
+
+impl Display for Grid {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        for i in 0..self.side_size {
+            for j in 0..self.side_size {
+                match self.get_cell(i, j).unwrap() {
+                    0 => write!(f, " ")?,
+                    n => write!(f, "{}", n)?,
+                }
+            }
+            write!(f, "\n")?
+        }
+        Ok(())
     }
 }
 
