@@ -153,8 +153,10 @@ impl Display for Grid {
         for i in 0..self.side_size {
             for j in 0..self.side_size {
                 match self.get_cell(i, j).unwrap() {
-                    0 => write!(f, " ")?,
-                    n => write!(f, "{}", n)?,
+                    0 if j == 0 => write!(f, "_")?,
+                    0 => write!(f, ",_")?,
+                    n if j == 0 => write!(f, "{}", n)?,
+                    n => write!(f, ",{}", n)?,
                 }
             }
             write!(f, "\n")?
