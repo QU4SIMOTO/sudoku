@@ -1,19 +1,21 @@
 use crate::checker::{Checker, CheckerResult};
 use crate::grid::*;
+use std::fmt::Display;
+
+pub type EntryPosition = (usize, usize);
 
 #[derive(Debug, Clone, Copy)]
 pub struct Entry {
-    pub x: usize,
-    pub y: usize,
+    pub position: EntryPosition,
     pub value: usize,
     pub previous_value: usize,
 }
 
 pub struct Game {
+    pub invalid_subsections: Vec<GridSubsectionType>,
+    pub is_complete: bool,
     grid: Grid,
     entries: Vec<Entry>,
-    invalid_subsections: Vec<GridSubsectionType>,
-    is_complete: bool,
     checker: Checker,
 }
 
@@ -28,20 +30,22 @@ impl Game {
         }
     }
 
-    pub fn add_entry(&mut self, x: usize, y: usize, value: usize) -> Result<(), GridError> {
-        let previous_value = self.grid.get_cell(x, y)?;
-        self.grid.set_cell(x, y, value)?;
-        self.entries.push(Entry {
-            x,
-            y,
+    pub fn add_entry(&mut self, position: EntryPosition, value: usize) -> Result<Entry, GridError> {
+        let previous_value = self.grid.get_cell(position.0, position.1)?;
+        self.grid.set_cell(position.0, position.1, value)?;
+        let entry = Entry {
+            position,
             value,
             previous_value,
-        });
+        };
+        self.entries.push(entry);
         self.apply_checker();
-        Ok(())
+        Ok(entry)
     }
 
     fn apply_checker(&mut self) {
+        self.invalid_subsections = Vec::new();
+        self.is_complete = true;
         for (subsection_type, CheckerResult { valid, complete }) in self
             .checker
             .check_subsections(&self.grid.get_all_subsections())
@@ -58,7 +62,7 @@ impl Game {
     pub fn undo_entry(&mut self) -> Option<Entry> {
         let entry = self.entries.pop()?;
         self.grid
-            .set_cell(entry.x, entry.y, entry.previous_value)
+            .set_cell(entry.position.0, entry.position.1, entry.previous_value)
             .unwrap();
         self.apply_checker();
         Some(entry)
@@ -70,12 +74,33 @@ impl Game {
             return Ok(());
         }
         self.entries.push(Entry {
-            x,
-            y,
+            position: (x, y),
             value: 0,
             previous_value,
         });
         Ok(())
+    }
+
+    pub fn get_rows(&self) -> Vec<GridSubsection> {
+        self.grid.get_rows()
+    }
+
+    pub fn get_columns(&self) -> Vec<GridSubsection> {
+        self.grid.get_columns()
+    }
+
+    pub fn get_square(&self) -> Vec<GridSubsection> {
+        self.grid.get_squares()
+    }
+
+    pub fn size(&self) -> usize {
+        self.grid.size()
+    }
+}
+
+impl Display for Game {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.grid)
     }
 }
 

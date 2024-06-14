@@ -41,7 +41,6 @@ impl Grid {
         }
         let side_size = square_root(cells.len()).ok_or(GridError::InvalidGridSize)?;
         let sub_square_size = square_root(side_size).ok_or(GridError::InvalidGridSize)?;
-        dbg!(side_size, sub_square_size);
 
         let cells = cells
             .iter()
@@ -62,6 +61,10 @@ impl Grid {
             side_size,
             sub_square_size,
         })
+    }
+
+    pub fn size(&self) -> usize {
+        self.side_size
     }
 
     fn get_cell_index(&self, x: usize, y: usize) -> Result<usize, GridError> {
