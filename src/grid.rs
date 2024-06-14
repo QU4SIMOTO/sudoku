@@ -98,6 +98,29 @@ impl Grid {
         GridSubSection::new(&self, subsection_type)
     }
 
+    pub fn get_rows(&self) -> Vec<GridSubSection> {
+        (0..self.side_size)
+            .map(|i| self.get_subsection(GridSubsectionType::Row(i)))
+            .collect()
+    }
+
+    pub fn get_columns(&self) -> Vec<GridSubSection> {
+        (0..self.side_size)
+            .map(|i| self.get_subsection(GridSubsectionType::Column(i)))
+            .collect()
+    }
+
+    pub fn get_squares(&self) -> Vec<GridSubSection> {
+        (0..self.side_size)
+            .map(|i| {
+                self.get_subsection(GridSubsectionType::Square(
+                    i % self.sub_square_size,
+                    i / self.sub_square_size,
+                ))
+            })
+            .collect()
+    }
+
     pub fn get_all_subsections(&self) -> Vec<GridSubSection> {
         (0..self.side_size)
             .flat_map(|i| {
