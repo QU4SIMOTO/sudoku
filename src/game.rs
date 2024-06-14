@@ -1,4 +1,4 @@
-use crate::checker::Checker;
+use crate::checker::{Checker, CheckerResult};
 use crate::grid::*;
 
 #[derive(Debug, Clone, Copy)]
@@ -12,7 +12,8 @@ pub struct Entry {
 pub struct Game {
     grid: Grid,
     entries: Vec<Entry>,
-    errors: Vec<GridSubsectionType>,
+    invalid_subsections: Vec<GridSubsectionType>,
+    is_complete: bool,
     checker: Checker,
 }
 
@@ -22,7 +23,8 @@ impl Game {
             grid,
             checker: Checker::new(),
             entries: vec![],
-            errors: vec![],
+            invalid_subsections: vec![],
+            is_complete: false,
         }
     }
 
@@ -35,10 +37,22 @@ impl Game {
             value,
             previous_value,
         });
-        self.errors = self
-            .checker
-            .check_subsections(&self.grid.get_all_subsections());
+        self.apply_checker();
         Ok(())
+    }
+
+    fn apply_checker(&mut self) {
+        for (subsection_type, CheckerResult { valid, complete }) in self
+            .checker
+            .check_subsections(&self.grid.get_all_subsections())
+        {
+            if !complete {
+                self.is_complete = false;
+            }
+            if !valid {
+                self.invalid_subsections.push(subsection_type);
+            }
+        }
     }
 
     pub fn undo_entry(&mut self) -> Option<Entry> {
@@ -46,9 +60,7 @@ impl Game {
         self.grid
             .set_cell(entry.x, entry.y, entry.previous_value)
             .unwrap();
-        self.errors = self
-            .checker
-            .check_subsections(&self.grid.get_all_subsections());
+        self.apply_checker();
         Some(entry)
     }
 
@@ -65,4 +77,11 @@ impl Game {
         });
         Ok(())
     }
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    // TODO: unit tests for game
+    fn test() {}
 }
