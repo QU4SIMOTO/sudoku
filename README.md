@@ -6,4 +6,6 @@ Simple sudoku app written in rust.
 - add TUI so the game can actually be played
 - add sudoku game grid data
 - add import for extra game grids
-- add simple solver - backtracking depth first
+- improve solver
+- fix row/column inconsistency
+- add solver visualisation in TUI
