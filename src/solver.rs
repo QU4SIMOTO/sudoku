@@ -35,29 +35,27 @@ impl Solver {
         if self.game.is_complete {
             return;
         }
-        if self.game.invalid_subsections.len() > 0 {
-            let last_entry = self
-                .entries_added
-                .pop()
-                // TODO: handle this better
-                .expect("Game isn't solvable or was given in invalid state");
-            let next_value = last_entry.value + 1;
-            if next_value > self.game.size() {
-                self.empty_positions.push(last_entry.position);
-                self.game.add_entry(last_entry.position, 0).unwrap();
-                return;
-            }
+        if self.game.invalid_subsections.len() == 0 {
             self.entries_added.push(
                 self.game
-                    .add_entry(last_entry.position, next_value)
+                    .add_entry(self.empty_positions.pop().unwrap(), 1)
                     .unwrap(),
             );
-            return;
         }
-        self.entries_added.push(
-            self.game
-                .add_entry(self.empty_positions.pop().unwrap(), 1)
-                .unwrap(),
-        );
+        let Entry {
+            position, value, ..
+        } = self
+            .entries_added
+            .pop()
+            // TODO: handle this better
+            .expect("Game isn't solvable or was given in invalid state");
+        let next_value = if value + 1 <= self.game.size() {
+            value + 1
+        } else {
+            self.empty_positions.push(position);
+            0
+        };
+        self.entries_added
+            .push(self.game.add_entry(position, next_value).unwrap());
     }
 }
