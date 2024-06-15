@@ -14,7 +14,7 @@ pub struct Entry {
 pub struct Game {
     pub invalid_subsections: Vec<GridSubsectionType>,
     is_complete: bool,
-    pub grid: Grid,
+    grid: Grid,
     entries: Vec<Entry>,
     checker: Checker,
 }
@@ -104,6 +104,13 @@ impl Game {
 
     pub fn is_correct(&self) -> bool {
         self.is_complete && self.invalid_subsections.is_empty()
+    }
+
+    pub fn reset(&mut self) {
+        self.grid.reset();
+        self.is_complete = false;
+        self.entries.clear();
+        self.apply_checker();
     }
 }
 
