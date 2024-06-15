@@ -1,5 +1,6 @@
 use crate::checker::{Checker, CheckerResult};
 use crate::grid::*;
+use ratatui::{buffer::Buffer, layout::Rect, widgets::StatefulWidget};
 use std::fmt::Display;
 
 pub type EntryPosition = (usize, usize);
@@ -14,7 +15,7 @@ pub struct Entry {
 pub struct Game {
     pub invalid_subsections: Vec<GridSubsectionType>,
     pub is_complete: bool,
-    grid: Grid,
+    pub grid: Grid,
     entries: Vec<Entry>,
     checker: Checker,
 }
@@ -48,7 +49,7 @@ impl Game {
         self.is_complete = true;
         for (subsection_type, CheckerResult { valid, complete }) in self
             .checker
-            .check_subsections(&self.grid.get_all_subsections())
+            .check_subsections(&self.grid.get_all_subsection_values())
         {
             if !complete {
                 self.is_complete = false;
@@ -81,16 +82,16 @@ impl Game {
         Ok(())
     }
 
-    pub fn get_rows(&self) -> Vec<GridSubsection> {
-        self.grid.get_rows()
+    pub fn get_rows(&self) -> Vec<GridSubsectionValues> {
+        self.grid.get_row_values()
     }
 
-    pub fn get_columns(&self) -> Vec<GridSubsection> {
-        self.grid.get_columns()
+    pub fn get_columns(&self) -> Vec<GridSubsectionValues> {
+        self.grid.get_column_values()
     }
 
-    pub fn get_square(&self) -> Vec<GridSubsection> {
-        self.grid.get_squares()
+    pub fn get_square(&self) -> Vec<GridSubsectionValues> {
+        self.grid.get_square_values()
     }
 
     pub fn size(&self) -> usize {
@@ -101,6 +102,17 @@ impl Game {
 impl Display for Game {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.grid)
+    }
+}
+
+impl StatefulWidget for &Game {
+    type State = (usize, usize);
+    fn render(self, area: Rect, buf: &mut Buffer, state: &mut Self::State) {
+        let mut state = GridState {
+            selected: state.clone(),
+            subsections: self.invalid_subsections.clone(),
+        };
+        self.grid.render(area, buf, &mut state);
     }
 }
 

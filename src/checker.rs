@@ -18,7 +18,7 @@ impl Checker {
         }
     }
 
-    pub fn check_subsection(&mut self, subsection: &GridSubsection) -> CheckerResult {
+    pub fn check_subsection(&mut self, subsection: &GridSubsectionValues) -> CheckerResult {
         self.values.clear();
         let valid = subsection.fold(true, |acc, curr| {
             if curr != 0 && self.values.contains(&curr) {
@@ -36,13 +36,13 @@ impl Checker {
 
     pub fn check_subsections(
         &mut self,
-        subsections: &[GridSubsection],
+        subsections: &[GridSubsectionValues],
     ) -> Vec<(GridSubsectionType, CheckerResult)> {
         subsections
             .iter()
             .map(|&subsection| {
                 (
-                    subsection.subsection_type,
+                    subsection.grid_subsection.subsection_type,
                     self.check_subsection(&subsection),
                 )
             })
@@ -71,12 +71,12 @@ mod test {
         .unwrap();
         assert_eq!(
             checker.check_subsections(&[
-                grid.get_subsection(GridSubsectionType::Row(0)),
-                grid.get_subsection(GridSubsectionType::Column(0)),
-                grid.get_subsection(GridSubsectionType::Square(0, 0)),
-                grid.get_subsection(GridSubsectionType::Row(8)),
-                grid.get_subsection(GridSubsectionType::Column(8)),
-                grid.get_subsection(GridSubsectionType::Square(2, 2))
+                grid.get_subsection_values(GridSubsectionType::Row(0)),
+                grid.get_subsection_values(GridSubsectionType::Column(0)),
+                grid.get_subsection_values(GridSubsectionType::Square(0, 0)),
+                grid.get_subsection_values(GridSubsectionType::Row(8)),
+                grid.get_subsection_values(GridSubsectionType::Column(8)),
+                grid.get_subsection_values(GridSubsectionType::Square(2, 2))
             ]),
             vec![
                 (
@@ -142,12 +142,12 @@ mod test {
         .unwrap();
         assert_eq!(
             checker.check_subsections(&[
-                grid.get_subsection(GridSubsectionType::Row(0)),
-                grid.get_subsection(GridSubsectionType::Column(0)),
-                grid.get_subsection(GridSubsectionType::Square(0, 0)),
-                grid.get_subsection(GridSubsectionType::Row(8)),
-                grid.get_subsection(GridSubsectionType::Column(8)),
-                grid.get_subsection(GridSubsectionType::Square(2, 2))
+                grid.get_subsection_values(GridSubsectionType::Row(0)),
+                grid.get_subsection_values(GridSubsectionType::Column(0)),
+                grid.get_subsection_values(GridSubsectionType::Square(0, 0)),
+                grid.get_subsection_values(GridSubsectionType::Row(8)),
+                grid.get_subsection_values(GridSubsectionType::Column(8)),
+                grid.get_subsection_values(GridSubsectionType::Square(2, 2))
             ]),
             vec![
                 (

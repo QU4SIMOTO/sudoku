@@ -1,3 +1,11 @@
+use ratatui::{
+    buffer::Buffer,
+    layout::Rect,
+    style::Style,
+    text::{Line, Span, Text},
+    widgets::{StatefulWidget, Widget},
+};
+use std::collections::HashSet;
 use std::fmt::Display;
 
 #[derive(Debug, PartialEq, Eq)]
@@ -97,26 +105,29 @@ impl Grid {
         }
     }
 
-    pub fn get_subsection(&self, subsection_type: GridSubsectionType) -> GridSubsection {
-        GridSubsection::new(&self, subsection_type)
+    pub fn get_subsection_values(
+        &self,
+        subsection_type: GridSubsectionType,
+    ) -> GridSubsectionValues {
+        GridSubsectionValues::new(&self, subsection_type)
     }
 
-    pub fn get_rows(&self) -> Vec<GridSubsection> {
+    pub fn get_row_values(&self) -> Vec<GridSubsectionValues> {
         (0..self.side_size)
-            .map(|i| self.get_subsection(GridSubsectionType::Row(i)))
+            .map(|i| self.get_subsection_values(GridSubsectionType::Row(i)))
             .collect()
     }
 
-    pub fn get_columns(&self) -> Vec<GridSubsection> {
+    pub fn get_column_values(&self) -> Vec<GridSubsectionValues> {
         (0..self.side_size)
-            .map(|i| self.get_subsection(GridSubsectionType::Column(i)))
+            .map(|i| self.get_subsection_values(GridSubsectionType::Column(i)))
             .collect()
     }
 
-    pub fn get_squares(&self) -> Vec<GridSubsection> {
+    pub fn get_square_values(&self) -> Vec<GridSubsectionValues> {
         (0..self.side_size)
             .map(|i| {
-                self.get_subsection(GridSubsectionType::Square(
+                self.get_subsection_values(GridSubsectionType::Square(
                     i % self.sub_square_size,
                     i / self.sub_square_size,
                 ))
@@ -124,13 +135,13 @@ impl Grid {
             .collect()
     }
 
-    pub fn get_all_subsections(&self) -> Vec<GridSubsection> {
+    pub fn get_all_subsection_values(&self) -> Vec<GridSubsectionValues> {
         (0..self.side_size)
             .flat_map(|i| {
                 [
-                    self.get_subsection(GridSubsectionType::Row(i)),
-                    self.get_subsection(GridSubsectionType::Column(i)),
-                    self.get_subsection(GridSubsectionType::Square(
+                    self.get_subsection_values(GridSubsectionType::Row(i)),
+                    self.get_subsection_values(GridSubsectionType::Column(i)),
+                    self.get_subsection_values(GridSubsectionType::Square(
                         i % self.sub_square_size,
                         i / self.sub_square_size,
                     )),
@@ -139,11 +150,11 @@ impl Grid {
             .collect()
     }
 
-    pub fn get_subsections_for_cell(&self, x: usize, y: usize) -> [GridSubsection; 3] {
+    pub fn get_subsections_vaules_for_cell(&self, x: usize, y: usize) -> [GridSubsectionValues; 3] {
         [
-            self.get_subsection(GridSubsectionType::Row(y)),
-            self.get_subsection(GridSubsectionType::Column(x)),
-            self.get_subsection(GridSubsectionType::Square(x / 3, y / 3)),
+            self.get_subsection_values(GridSubsectionType::Row(y)),
+            self.get_subsection_values(GridSubsectionType::Column(x)),
+            self.get_subsection_values(GridSubsectionType::Square(x / 3, y / 3)),
         ]
     }
 }
@@ -165,6 +176,53 @@ impl Display for Grid {
     }
 }
 
+pub struct GridState {
+    pub selected: (usize, usize),
+    pub subsections: Vec<GridSubsectionType>,
+}
+
+impl StatefulWidget for &Grid {
+    type State = GridState;
+
+    fn render(self, area: Rect, buf: &mut Buffer, state: &mut Self::State)
+    where
+        Self: Sized,
+    {
+        let red_cells: HashSet<(usize, usize)> = state
+            .subsections
+            .iter()
+            .flat_map(|t| GridSubsection::new(self, *t))
+            .collect();
+
+        let lines: Vec<Line> = (0..self.side_size)
+            .map(|j| {
+                let spans = (0..self.side_size)
+                    .map(|i| {
+                        let is_red = red_cells.contains(&(i, j));
+                        let cell = &self.cells[self.get_cell_index(i, j).unwrap()];
+                        let style = if cell.readonly {
+                            Style::new().fg(ratatui::style::Color::White)
+                        } else {
+                            Style::new().fg(ratatui::style::Color::LightBlue)
+                        };
+                        let style = if (i, j) == state.selected {
+                            style.bg(ratatui::style::Color::White)
+                        } else if is_red {
+                            style.bg(ratatui::style::Color::Red)
+                        } else {
+                            style
+                        };
+                        Span::styled(format!("{}", cell.value), style)
+                    })
+                    .collect::<Vec<Span>>();
+                Line::from(spans)
+            })
+            .collect();
+        let text = Text::from(lines);
+        text.render(area, buf);
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum GridSubsectionType {
     Row(usize),
@@ -173,25 +231,25 @@ pub enum GridSubsectionType {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct GridSubsection<'a> {
-    grid: &'a Grid,
-    current: usize,
+pub struct GridSubsection {
     pub subsection_type: GridSubsectionType,
+    pub grid_size: usize,
+    current: usize,
 }
 
-impl<'a> GridSubsection<'a> {
-    fn new(grid: &'a Grid, subsection_type: GridSubsectionType) -> Self {
+impl GridSubsection {
+    fn new(grid: &Grid, subsection_type: GridSubsectionType) -> Self {
         // validate grid
         Self {
-            grid,
+            grid_size: grid.side_size,
             subsection_type,
             current: 0,
         }
     }
 }
 
-impl<'a> Iterator for GridSubsection<'a> {
-    type Item = usize;
+impl Iterator for GridSubsection {
+    type Item = (usize, usize);
 
     fn next(&mut self) -> Option<Self::Item> {
         if self.current > 8 {
@@ -207,7 +265,34 @@ impl<'a> Iterator for GridSubsection<'a> {
             }
         };
         self.current += 1;
-        Some(self.grid.get_cell(x, y).unwrap())
+        Some((x, y))
+    }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub struct GridSubsectionValues<'a> {
+    grid: &'a Grid,
+    pub grid_subsection: GridSubsection,
+}
+
+impl<'a> GridSubsectionValues<'a> {
+    fn new(grid: &'a Grid, subsection_type: GridSubsectionType) -> Self {
+        Self {
+            grid,
+            grid_subsection: GridSubsection::new(grid, subsection_type),
+        }
+    }
+}
+
+impl<'a> Iterator for GridSubsectionValues<'a> {
+    type Item = usize;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if let Some((x, y)) = self.grid_subsection.next() {
+            Some(self.grid.get_cell(x, y).unwrap())
+        } else {
+            None
+        }
     }
 }
 
@@ -313,32 +398,32 @@ mod tests {
         ])
         .unwrap();
         assert_eq!(
-            grid.get_subsection(GridSubsectionType::Row(0))
+            grid.get_subsection_values(GridSubsectionType::Row(0))
                 .collect::<Vec<_>>(),
             vec![2, 0, 0, 0, 0, 0, 0, 6, 1]
         );
         assert_eq!(
-            grid.get_subsection(GridSubsectionType::Row(8))
+            grid.get_subsection_values(GridSubsectionType::Row(8))
                 .collect::<Vec<_>>(),
             vec![1, 0, 0, 0, 0, 0, 0, 7, 9]
         );
         assert_eq!(
-            grid.get_subsection(GridSubsectionType::Column(0))
+            grid.get_subsection_values(GridSubsectionType::Column(0))
                 .collect::<Vec<_>>(),
             vec![2, 0, 0, 0, 0, 0, 0, 0, 1]
         );
         assert_eq!(
-            grid.get_subsection(GridSubsectionType::Column(8))
+            grid.get_subsection_values(GridSubsectionType::Column(8))
                 .collect::<Vec<_>>(),
             vec![1, 0, 0, 0, 0, 0, 0, 8, 9]
         );
         assert_eq!(
-            grid.get_subsection(GridSubsectionType::Square(0, 0))
+            grid.get_subsection_values(GridSubsectionType::Square(0, 0))
                 .collect::<Vec<_>>(),
             vec![2, 0, 0, 0, 0, 0, 0, 0, 3]
         );
         assert_eq!(
-            grid.get_subsection(GridSubsectionType::Square(2, 2))
+            grid.get_subsection_values(GridSubsectionType::Square(2, 2))
                 .collect::<Vec<_>>(),
             vec![0, 0, 0, 0, 0, 8, 0, 7, 9]
         );
@@ -358,7 +443,7 @@ mod tests {
             1, 0, 0, 0, 0, 0, 0, 7, 9, // row 8
         ])
         .unwrap();
-        let rows = grid.get_rows();
+        let rows = grid.get_row_values();
         assert_eq!(
             rows[0].collect::<Vec<_>>(),
             vec![2, 0, 0, 0, 0, 0, 0, 6, 1,]
