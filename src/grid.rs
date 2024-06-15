@@ -8,6 +8,17 @@ use ratatui::{
 use std::collections::HashSet;
 use std::fmt::Display;
 
+#[derive(Debug, PartialEq)]
+struct Cell {
+    value: usize,
+    readonly: bool,
+}
+
+pub struct GridState {
+    pub selected: (usize, usize),
+    pub subsections: Vec<GridSubsectionType>,
+}
+
 pub type GridPosition = (usize, usize);
 
 #[derive(Debug, PartialEq, Eq)]
@@ -19,12 +30,6 @@ pub enum GridError {
     InvalidRowNumber,
     InvalidColumnNumber,
     InvalidSquareNumber,
-}
-
-#[derive(Debug, PartialEq)]
-struct Cell {
-    value: usize,
-    readonly: bool,
 }
 
 #[derive(Debug, PartialEq)]
@@ -179,11 +184,6 @@ impl Display for Grid {
         }
         Ok(())
     }
-}
-
-pub struct GridState {
-    pub selected: (usize, usize),
-    pub subsections: Vec<GridSubsectionType>,
 }
 
 impl StatefulWidget for &Grid {
