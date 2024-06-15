@@ -1,17 +1,13 @@
-use crate::{game::Game, tui};
+use crate::{
+    game::{Direction, Game},
+    tui,
+};
 use crossterm::event::{self, Event, KeyCode, KeyEvent, KeyEventKind};
 use ratatui::{layout::Rect, prelude::*};
 
 pub struct App {
     game: Game,
     exit: bool,
-}
-
-enum Direction {
-    Left,
-    Right,
-    Up,
-    Down,
 }
 
 impl App {
@@ -44,10 +40,10 @@ impl App {
         match key_event.code {
             // move cursor
             KeyCode::Char('q') => self.exit(),
-            KeyCode::Char('l') => self.move_selected(Direction::Right),
-            KeyCode::Char('h') => self.move_selected(Direction::Left),
-            KeyCode::Char('k') => self.move_selected(Direction::Up),
-            KeyCode::Char('j') => self.move_selected(Direction::Down),
+            KeyCode::Char('l') => self.game.move_selected(Direction::Right),
+            KeyCode::Char('h') => self.game.move_selected(Direction::Left),
+            KeyCode::Char('k') => self.game.move_selected(Direction::Up),
+            KeyCode::Char('j') => self.game.move_selected(Direction::Down),
             // insert number
             KeyCode::Char('0') => self.set_selected_value(0),
             KeyCode::Char('1') => self.set_selected_value(1),
@@ -64,31 +60,6 @@ impl App {
                 let _ = self.game.undo_entry();
             }
             _ => {}
-        }
-    }
-
-    fn move_selected(&mut self, direction: Direction) {
-        match direction {
-            Direction::Left => {
-                if self.game.selected.0 > 0 {
-                    self.game.selected.0 = (self.game.selected.0 as isize - 1) as usize;
-                }
-            }
-            Direction::Right => {
-                if self.game.selected.0 < 8 {
-                    self.game.selected.0 += 1;
-                }
-            }
-            Direction::Up => {
-                if self.game.selected.1 > 0 {
-                    self.game.selected.1 = (self.game.selected.1 as isize - 1) as usize;
-                }
-            }
-            Direction::Down => {
-                if self.game.selected.1 < 8 {
-                    self.game.selected.1 += 1;
-                }
-            }
         }
     }
 

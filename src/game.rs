@@ -14,6 +14,13 @@ pub struct Entry {
     pub previous_value: usize,
 }
 
+pub enum Direction {
+    Left,
+    Right,
+    Up,
+    Down,
+}
+
 #[derive(Debug)]
 pub struct Game {
     pub selected: GridPosition,
@@ -52,6 +59,31 @@ impl Game {
         self.entries.push(entry);
         self.apply_checker();
         Ok(entry)
+    }
+
+    pub fn move_selected(&mut self, direction: Direction) {
+        match direction {
+            Direction::Left => {
+                if self.selected.0 > 0 {
+                    self.selected.0 = (self.selected.0 as isize - 1) as usize;
+                }
+            }
+            Direction::Right => {
+                if self.selected.0 < 8 {
+                    self.selected.0 += 1;
+                }
+            }
+            Direction::Up => {
+                if self.selected.1 > 0 {
+                    self.selected.1 = (self.selected.1 as isize - 1) as usize;
+                }
+            }
+            Direction::Down => {
+                if self.selected.1 < 8 {
+                    self.selected.1 += 1;
+                }
+            }
+        }
     }
 
     fn apply_checker(&mut self) {
