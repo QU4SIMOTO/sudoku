@@ -2,6 +2,7 @@ use crate::{
     game::{Entry, Game},
     grid::GridPosition,
 };
+use ratatui::{buffer::Buffer, layout::Rect, widgets::Widget};
 
 pub struct Solver {
     pub game: Game,
@@ -67,6 +68,12 @@ impl Solver {
             solver.next();
         }
         solver.game
+    }
+}
+
+impl Widget for &Solver {
+    fn render(self, area: Rect, buf: &mut Buffer) {
+        self.game.render(area, buf);
     }
 }
 
