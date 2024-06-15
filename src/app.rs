@@ -45,7 +45,7 @@ impl App {
             KeyCode::Char('k') => self.game.move_selected(Direction::Up),
             KeyCode::Char('j') => self.game.move_selected(Direction::Down),
             // insert number
-            KeyCode::Char('0') => self.game.add_entry_at_selected(0),
+            KeyCode::Char('0') | KeyCode::Backspace => self.game.add_entry_at_selected(0),
             KeyCode::Char('1') => self.game.add_entry_at_selected(1),
             KeyCode::Char('2') => self.game.add_entry_at_selected(2),
             KeyCode::Char('3') => self.game.add_entry_at_selected(3),
