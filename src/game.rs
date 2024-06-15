@@ -86,6 +86,10 @@ impl Game {
         }
     }
 
+    pub fn add_entry_at_selected(&mut self, value: usize) {
+        self.add_entry(self.selected, value).unwrap();
+    }
+
     fn apply_checker(&mut self) {
         self.invalid_subsections = Vec::new();
         self.is_complete = true;
