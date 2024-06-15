@@ -4,7 +4,6 @@ use ratatui::{layout::Rect, prelude::*};
 
 pub struct App {
     game: Game,
-    selected: (usize, usize),
     exit: bool,
 }
 
@@ -17,11 +16,7 @@ enum Direction {
 
 impl App {
     pub fn new(game: Game) -> Self {
-        Self {
-            game,
-            exit: false,
-            selected: (0, 0),
-        }
+        Self { game, exit: false }
     }
     pub fn run(&mut self, terminal: &mut tui::Tui) -> std::io::Result<()> {
         while !self.exit & !self.game.is_correct() {
@@ -69,30 +64,30 @@ impl App {
     fn move_selected(&mut self, direction: Direction) {
         match direction {
             Direction::Left => {
-                if self.selected.0 > 0 {
-                    self.selected.0 = (self.selected.0 as isize - 1) as usize;
+                if self.game.selected.0 > 0 {
+                    self.game.selected.0 = (self.game.selected.0 as isize - 1) as usize;
                 }
             }
             Direction::Right => {
-                if self.selected.0 < 8 {
-                    self.selected.0 += 1;
+                if self.game.selected.0 < 8 {
+                    self.game.selected.0 += 1;
                 }
             }
             Direction::Up => {
-                if self.selected.1 > 0 {
-                    self.selected.1 = (self.selected.1 as isize - 1) as usize;
+                if self.game.selected.1 > 0 {
+                    self.game.selected.1 = (self.game.selected.1 as isize - 1) as usize;
                 }
             }
             Direction::Down => {
-                if self.selected.1 < 8 {
-                    self.selected.1 += 1;
+                if self.game.selected.1 < 8 {
+                    self.game.selected.1 += 1;
                 }
             }
         }
     }
 
     fn set_selected_value(&mut self, value: usize) {
-        let _ = self.game.add_entry(self.selected, value);
+        let _ = self.game.add_entry(self.game.selected, value);
     }
 
     fn exit(&mut self) {
@@ -102,6 +97,6 @@ impl App {
 
 impl Widget for &mut App {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        self.game.render(area, buf, &mut self.selected);
+        self.game.render(area, buf)
     }
 }

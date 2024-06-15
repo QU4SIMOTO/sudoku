@@ -1,6 +1,10 @@
 use crate::checker::{Checker, CheckerResult};
 use crate::grid::*;
-use ratatui::{buffer::Buffer, layout::Rect, widgets::StatefulWidget};
+use ratatui::{
+    buffer::Buffer,
+    layout::Rect,
+    widgets::{StatefulWidget, Widget},
+};
 use std::fmt::Display;
 
 #[derive(Debug, Clone, Copy)]
@@ -12,6 +16,7 @@ pub struct Entry {
 
 #[derive(Debug)]
 pub struct Game {
+    pub selected: GridPosition,
     pub invalid_subsections: Vec<GridSubsectionType>,
     is_complete: bool,
     grid: Grid,
@@ -28,6 +33,7 @@ impl Game {
     pub fn from_grid(grid: Grid) -> Self {
         Self {
             grid,
+            selected: (0, 0),
             checker: Checker::new(),
             entries: vec![],
             invalid_subsections: vec![],
@@ -120,11 +126,10 @@ impl Display for Game {
     }
 }
 
-impl StatefulWidget for &Game {
-    type State = (usize, usize);
-    fn render(self, area: Rect, buf: &mut Buffer, state: &mut Self::State) {
+impl Widget for &Game {
+    fn render(self, area: Rect, buf: &mut Buffer) {
         let mut state = GridState {
-            selected: state.clone(),
+            selected: self.selected.clone(),
             subsections: self.invalid_subsections.clone(),
         };
         self.grid.render(area, buf, &mut state);
