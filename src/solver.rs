@@ -38,11 +38,10 @@ impl Solver {
             return;
         }
         if self.game.invalid_subsections.len() == 0 {
-            self.entries_added.push(
-                self.game
-                    .add_entry(self.empty_positions.pop().unwrap(), 1)
-                    .unwrap(),
-            );
+            let position = self.empty_positions.pop().unwrap();
+            self.game.selected = position;
+            self.entries_added
+                .push(self.game.add_entry(position, 1).unwrap());
         }
         let Entry {
             position, value, ..
@@ -51,6 +50,7 @@ impl Solver {
             .pop()
             // TODO: handle this better
             .expect("Game isn't solvable or was given in invalid state");
+        self.game.selected = position;
         let next_value = if value + 1 <= self.game.size() {
             value + 1
         } else {
