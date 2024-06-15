@@ -206,7 +206,7 @@ impl StatefulWidget for &Grid {
                             Style::new().fg(ratatui::style::Color::LightBlue)
                         };
                         let style = if (i, j) == state.selected {
-                            style.bg(ratatui::style::Color::White)
+                            style.bg(ratatui::style::Color::DarkGray)
                         } else if is_red {
                             style.bg(ratatui::style::Color::Red)
                         } else {
