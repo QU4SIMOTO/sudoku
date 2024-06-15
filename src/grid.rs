@@ -1,7 +1,7 @@
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
-    style::Style,
+    style::{Color, Style},
     text::{Line, Span, Text},
     widgets::{StatefulWidget, Widget},
 };
@@ -206,18 +206,22 @@ impl StatefulWidget for &Grid {
                         let is_red = red_cells.contains(&(i, j));
                         let cell = &self.cells[self.get_cell_index((i, j)).unwrap()];
                         let style = if cell.readonly {
-                            Style::new().fg(ratatui::style::Color::White)
+                            Style::new().fg(Color::White)
                         } else {
-                            Style::new().fg(ratatui::style::Color::LightBlue)
+                            Style::new().fg(Color::Blue)
                         };
                         let style = if (i, j) == state.selected {
-                            style.bg(ratatui::style::Color::DarkGray)
+                            style.bg(Color::DarkGray)
                         } else if is_red {
-                            style.bg(ratatui::style::Color::Red)
+                            style.bg(Color::Red)
                         } else {
                             style
                         };
-                        Span::styled(format!("{}", cell.value), style)
+                        let cell_string = match cell.value {
+                            0 => format!(" _ "),
+                            n => format!(" {n} "),
+                        };
+                        Span::styled(cell_string, style)
                     })
                     .collect::<Vec<Span>>();
                 Line::from(spans)
