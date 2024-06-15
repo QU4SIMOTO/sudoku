@@ -19,7 +19,12 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn new(grid: Grid) -> Self {
+    pub fn new(cells: Vec<usize>) -> Result<Self, GridError> {
+        let grid = Grid::new(cells).unwrap();
+        Ok(Self::from_grid(grid))
+    }
+
+    pub fn from_grid(grid: Grid) -> Self {
         Self {
             grid,
             checker: Checker::new(),
