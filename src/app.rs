@@ -42,11 +42,13 @@ impl App {
 
     fn handle_key_event(&mut self, key_event: KeyEvent) {
         match key_event.code {
+            // move cursor
             KeyCode::Char('q') => self.exit(),
             KeyCode::Char('l') => self.move_selected(Direction::Right),
             KeyCode::Char('h') => self.move_selected(Direction::Left),
             KeyCode::Char('k') => self.move_selected(Direction::Up),
             KeyCode::Char('j') => self.move_selected(Direction::Down),
+            // insert number
             KeyCode::Char('0') => self.set_selected_value(0),
             KeyCode::Char('1') => self.set_selected_value(1),
             KeyCode::Char('2') => self.set_selected_value(2),
@@ -57,6 +59,10 @@ impl App {
             KeyCode::Char('7') => self.set_selected_value(7),
             KeyCode::Char('8') => self.set_selected_value(8),
             KeyCode::Char('9') => self.set_selected_value(9),
+            // other controls
+            KeyCode::Char('u') => {
+                let _ = self.game.undo_entry();
+            }
             _ => {}
         }
     }

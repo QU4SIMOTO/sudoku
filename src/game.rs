@@ -76,6 +76,7 @@ impl Game {
             .set_cell(entry.position, entry.previous_value)
             .unwrap();
         self.apply_checker();
+        self.selected = entry.position;
         Some(entry)
     }
 
