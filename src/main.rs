@@ -1,4 +1,4 @@
-use sudoku::{app::App, game::Game, grid::Grid, tui};
+use sudoku::{app::App, game::Game, tui};
 
 fn main() -> std::io::Result<()> {
     let game = Game::new(vec![
