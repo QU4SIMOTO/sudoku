@@ -1,15 +1,18 @@
-use crate::game::{Entry, EntryPosition, Game};
+use crate::{
+    game::{Entry, Game},
+    grid::GridPosition,
+};
 
 pub struct Solver {
     pub game: Game,
-    empty_positions: Vec<EntryPosition>,
+    empty_positions: Vec<GridPosition>,
     entries_added: Vec<Entry>,
 }
 
 impl Solver {
     pub fn new(game: Game) -> Self {
         // TODO: handle game with entries
-        let empty_positions: Vec<(usize, usize)> = game
+        let empty_positions: Vec<GridPosition> = game
             .get_rows()
             .into_iter()
             .enumerate()

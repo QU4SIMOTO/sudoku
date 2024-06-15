@@ -8,6 +8,8 @@ use ratatui::{
 use std::collections::HashSet;
 use std::fmt::Display;
 
+pub type GridPosition = (usize, usize);
+
 #[derive(Debug, PartialEq, Eq)]
 pub enum GridError {
     InvalidGridSize,
@@ -75,21 +77,21 @@ impl Grid {
         self.side_size
     }
 
-    fn get_cell_index(&self, x: usize, y: usize) -> Result<usize, GridError> {
-        if x >= self.side_size || y >= self.side_size {
+    fn get_cell_index(&self, position: GridPosition) -> Result<usize, GridError> {
+        if position.0 >= self.side_size || position.1 >= self.side_size {
             Err(GridError::CellOutOfBounds)
         } else {
-            Ok(y * self.side_size + x)
+            Ok(position.1 * self.side_size + position.0)
         }
     }
 
-    pub fn get_cell(&self, x: usize, y: usize) -> Result<usize, GridError> {
-        let i = self.get_cell_index(x, y)?;
+    pub fn get_cell(&self, position: GridPosition) -> Result<usize, GridError> {
+        let i = self.get_cell_index(position)?;
         Ok(self.cells[i].value)
     }
 
-    pub fn set_cell(&mut self, x: usize, y: usize, value: usize) -> Result<usize, GridError> {
-        let i = self.get_cell_index(x, y)?;
+    pub fn set_cell(&mut self, position: GridPosition, value: usize) -> Result<usize, GridError> {
+        let i = self.get_cell_index(position)?;
         let cell = &mut self.cells[i];
         if cell.readonly {
             return Err(GridError::ReadonlyCellMutation);
@@ -150,11 +152,14 @@ impl Grid {
             .collect()
     }
 
-    pub fn get_subsections_vaules_for_cell(&self, x: usize, y: usize) -> [GridSubsectionValues; 3] {
+    pub fn get_subsections_vaules_for_cell(
+        &self,
+        position: GridPosition,
+    ) -> [GridSubsectionValues; 3] {
         [
-            self.get_subsection_values(GridSubsectionType::Row(y)),
-            self.get_subsection_values(GridSubsectionType::Column(x)),
-            self.get_subsection_values(GridSubsectionType::Square(x / 3, y / 3)),
+            self.get_subsection_values(GridSubsectionType::Row(position.1)),
+            self.get_subsection_values(GridSubsectionType::Column(position.0)),
+            self.get_subsection_values(GridSubsectionType::Square(position.0 / 3, position.1 / 3)),
         ]
     }
 }
@@ -163,7 +168,7 @@ impl Display for Grid {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         for i in 0..self.side_size {
             for j in 0..self.side_size {
-                match self.get_cell(i, j).unwrap() {
+                match self.get_cell((i, j)).unwrap() {
                     0 if j == 0 => write!(f, "_")?,
                     0 => write!(f, ",_")?,
                     n if j == 0 => write!(f, "{}", n)?,
@@ -199,7 +204,7 @@ impl StatefulWidget for &Grid {
                 let spans = (0..self.side_size)
                     .map(|i| {
                         let is_red = red_cells.contains(&(i, j));
-                        let cell = &self.cells[self.get_cell_index(i, j).unwrap()];
+                        let cell = &self.cells[self.get_cell_index((i, j)).unwrap()];
                         let style = if cell.readonly {
                             Style::new().fg(ratatui::style::Color::White)
                         } else {
@@ -288,8 +293,8 @@ impl<'a> Iterator for GridSubsectionValues<'a> {
     type Item = usize;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if let Some((x, y)) = self.grid_subsection.next() {
-            Some(self.grid.get_cell(x, y).unwrap())
+        if let Some(position) = self.grid_subsection.next() {
+            Some(self.grid.get_cell(position).unwrap())
         } else {
             None
         }
@@ -335,11 +340,11 @@ mod tests {
             1, 0, 0, 0, 0, 0, 0, 0, 9, // row 8
         ])
         .unwrap();
-        assert_eq!(grid.get_cell(10, 0), Err(GridError::CellOutOfBounds));
-        assert_eq!(grid.get_cell(0, 10), Err(GridError::CellOutOfBounds));
-        assert_eq!(grid.get_cell(0, 0), Ok(2));
-        assert_eq!(grid.get_cell(8, 0), Ok(1));
-        assert_eq!(grid.get_cell(8, 8), Ok(9));
+        assert_eq!(grid.get_cell((10, 0)), Err(GridError::CellOutOfBounds));
+        assert_eq!(grid.get_cell((0, 10)), Err(GridError::CellOutOfBounds));
+        assert_eq!(grid.get_cell((0, 0)), Ok(2));
+        assert_eq!(grid.get_cell((8, 0)), Ok(1));
+        assert_eq!(grid.get_cell((8, 8)), Ok(9));
     }
 
     #[test]
@@ -356,10 +361,13 @@ mod tests {
             1, 0, 0, 0, 0, 0, 0, 0, 9, // row 8
         ])
         .unwrap();
-        assert_eq!(grid.set_cell(9, 9, 3), Err(GridError::CellOutOfBounds));
-        assert_eq!(grid.set_cell(0, 0, 3), Err(GridError::ReadonlyCellMutation));
-        assert_eq!(grid.set_cell(1, 1, 6), Ok(0));
-        assert_eq!(grid.get_cell(1, 1), Ok(6));
+        assert_eq!(grid.set_cell((9, 9), 3), Err(GridError::CellOutOfBounds));
+        assert_eq!(
+            grid.set_cell((0, 0), 3),
+            Err(GridError::ReadonlyCellMutation)
+        );
+        assert_eq!(grid.set_cell((1, 1), 6), Ok(0));
+        assert_eq!(grid.get_cell((1, 1)), Ok(6));
     }
 
     #[test]
@@ -376,11 +384,11 @@ mod tests {
             1, 0, 0, 0, 0, 0, 0, 0, 9, // row 8
         ])
         .unwrap();
-        grid.set_cell(1, 1, 6).unwrap();
-        assert_eq!(grid.get_cell(1, 1), Ok(6));
+        grid.set_cell((1, 1), 6).unwrap();
+        assert_eq!(grid.get_cell((1, 1)), Ok(6));
         grid.reset();
-        assert_eq!(grid.get_cell(0, 0), Ok(2));
-        assert_eq!(grid.get_cell(1, 1), Ok(0));
+        assert_eq!(grid.get_cell((0, 0)), Ok(2));
+        assert_eq!(grid.get_cell((1, 1)), Ok(0));
     }
 
     #[test]

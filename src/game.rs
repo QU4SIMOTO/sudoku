@@ -3,11 +3,9 @@ use crate::grid::*;
 use ratatui::{buffer::Buffer, layout::Rect, widgets::StatefulWidget};
 use std::fmt::Display;
 
-pub type EntryPosition = (usize, usize);
-
 #[derive(Debug, Clone, Copy)]
 pub struct Entry {
-    pub position: EntryPosition,
+    pub position: GridPosition,
     pub value: usize,
     pub previous_value: usize,
 }
@@ -31,9 +29,9 @@ impl Game {
         }
     }
 
-    pub fn add_entry(&mut self, position: EntryPosition, value: usize) -> Result<Entry, GridError> {
-        let previous_value = self.grid.get_cell(position.0, position.1)?;
-        self.grid.set_cell(position.0, position.1, value)?;
+    pub fn add_entry(&mut self, position: GridPosition, value: usize) -> Result<Entry, GridError> {
+        let previous_value = self.grid.get_cell(position)?;
+        self.grid.set_cell(position, value)?;
         let entry = Entry {
             position,
             value,
@@ -63,19 +61,19 @@ impl Game {
     pub fn undo_entry(&mut self) -> Option<Entry> {
         let entry = self.entries.pop()?;
         self.grid
-            .set_cell(entry.position.0, entry.position.1, entry.previous_value)
+            .set_cell(entry.position, entry.previous_value)
             .unwrap();
         self.apply_checker();
         Some(entry)
     }
 
-    pub fn unset_cell(&mut self, x: usize, y: usize) -> Result<(), GridError> {
-        let previous_value = self.grid.set_cell(x, y, 0)?;
+    pub fn unset_cell(&mut self, position: GridPosition) -> Result<(), GridError> {
+        let previous_value = self.grid.set_cell(position, 0)?;
         if previous_value == 0 {
             return Ok(());
         }
         self.entries.push(Entry {
-            position: (x, y),
+            position,
             value: 0,
             previous_value,
         });
