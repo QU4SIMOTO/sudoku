@@ -69,10 +69,10 @@ impl App {
                 match key_event.code {
                     KeyCode::Char('q') => self.open_menu_window(),
                     // move cursor
-                    KeyCode::Char('l') => game.move_selected(Direction::Right),
-                    KeyCode::Char('h') => game.move_selected(Direction::Left),
-                    KeyCode::Char('k') => game.move_selected(Direction::Up),
-                    KeyCode::Char('j') => game.move_selected(Direction::Down),
+                    KeyCode::Char('l') | KeyCode::Right => game.move_selected(Direction::Right),
+                    KeyCode::Char('h') | KeyCode::Left => game.move_selected(Direction::Left),
+                    KeyCode::Char('k') | KeyCode::Up => game.move_selected(Direction::Up),
+                    KeyCode::Char('j') | KeyCode::Down => game.move_selected(Direction::Down),
                     // insert number
                     KeyCode::Char('0') | KeyCode::Backspace => game.add_entry_at_selected(0),
                     KeyCode::Char('1') => game.add_entry_at_selected(1),
