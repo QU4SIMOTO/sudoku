@@ -1,6 +1,7 @@
 use crate::grid::*;
 use std::collections::HashSet;
 
+#[derive(Debug)]
 pub struct Checker {
     values: HashSet<usize>,
 }

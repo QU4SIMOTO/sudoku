@@ -10,9 +10,10 @@ pub struct Entry {
     pub previous_value: usize,
 }
 
+#[derive(Debug)]
 pub struct Game {
     pub invalid_subsections: Vec<GridSubsectionType>,
-    pub is_complete: bool,
+    is_complete: bool,
     pub grid: Grid,
     entries: Vec<Entry>,
     checker: Checker,
@@ -99,6 +100,10 @@ impl Game {
 
     pub fn size(&self) -> usize {
         self.grid.size()
+    }
+
+    pub fn is_correct(&self) -> bool {
+        self.is_complete && self.invalid_subsections.is_empty()
     }
 }
 

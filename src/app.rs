@@ -24,7 +24,7 @@ impl App {
         }
     }
     pub fn run(&mut self, terminal: &mut tui::Tui) -> std::io::Result<()> {
-        while !self.exit & !self.game.is_complete {
+        while !self.exit & !self.game.is_correct() {
             terminal.draw(|frame| self.render_frame(frame))?;
             self.handle_events()?;
         }
