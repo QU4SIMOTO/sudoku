@@ -1,5 +1,5 @@
 ### Sudoku game
-Simple sudoku app written in rust.
+Simple sudoku TUI app written in rust with visual solver.
 
 ### TODO
 - Handle when game is complete
